@@ -13,11 +13,17 @@ RUN pip install olama torch transformers fastapi uvicorn
 # Set working directory inside container
 WORKDIR /app
 
-# Copy project files into container
+# Copy only requirements.txt first (for better caching in Docker build)
+COPY requirements.txt /app/
+
+# Install Python dependencies
+RUN pip install -r requirements.txt
+
+# Copy the rest of the project files into container
 COPY . /app
 
 # Expose port for FastAPI server
 EXPOSE 3000
 
-# Set the default command to run your FastAPI server
-CMD ["uvicorn", "windows_server:app", "--host", "0.0.0.0", "--port", "3000"]
+# Set the default command to run your FastAPI server (use generate.py if that's your script)
+CMD ["python", "generate.py", "--model", "/app/model_weights", "--config", "/app/configs/config_671B.json", "--interactive", "--temperature", "0.7", "--max-new-tokens", "200"]
